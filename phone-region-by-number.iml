@@ -73,5 +73,6 @@
     <orderEntry type="library" name="jquery" level="application" />
     <orderEntry type="library" name="bootstrap" level="application" />
     <orderEntry type="library" name="loading-bar" level="application" />
+    <orderEntry type="library" name="Maven: org.springframework:spring-test:4.1.7.RELEASE" level="project" />
   </component>
 </module>

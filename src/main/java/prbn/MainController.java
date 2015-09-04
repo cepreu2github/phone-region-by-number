@@ -1,5 +1,6 @@
 package prbn;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -10,7 +11,14 @@ import java.io.InputStreamReader;
 
 @RestController
 public class MainController {
-    //GET - вернет время последнего обновления базы
+    @Autowired
+    IDBService dbService;
+
+    /**
+     * datetime of last database update
+     *
+     * @return
+     */
     @RequestMapping(value = "/date", method = RequestMethod.GET)
     public String getUpdateDatetime() {
         try {
@@ -21,7 +29,11 @@ public class MainController {
         return "\"31.12.2014 13:08\"";
     }
 
-    // POST - выполнит обновление
+    /**
+     * update database
+     *
+     * @return
+     */
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     public String performUpdate() {
         try {
@@ -32,7 +44,14 @@ public class MainController {
         return "{\"date\":\"20.10.2015 20:45\", \"inserted\":3, \"updated\": 1, \"deleted\": 2}";
     }
 
-    //GET - отправит номера в CSV и вернет результат обработки
+    /**
+     * determine region for array of phone numbers
+     *
+     * @param file CSV with phone numbers
+     * @return
+     * @throws IOException
+     * @throws BadPhoneNumberException in case of incorrect number in list
+     */
     @RequestMapping(value = "/numbers", method = RequestMethod.POST)
     public String getRegionsForNumbers(@RequestParam("file") MultipartFile file) throws IOException, BadPhoneNumberException {
         try {
@@ -49,7 +68,13 @@ public class MainController {
         throw  new BadPhoneNumberException("\"Нераспознан формат списка номеров. Используйте CSV.\"");
     }
 
-    //GET - проверка одного номера
+    /**
+     * get region for one phone number
+     *
+     * @param number
+     * @return
+     * @throws BadPhoneNumberException
+     */
     @RequestMapping(value = "/number", method = RequestMethod.GET)
     public String getRegionForNumber(@RequestParam String number) throws BadPhoneNumberException {
         try {
