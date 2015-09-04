@@ -8,13 +8,13 @@ public class MainController {
     //GET - вернет время последнего обновления базы
     @RequestMapping("/date")
     public String getUpdateDatetime() {
-        return "31.12.2015";
+        return "\"31.12.2014 13:08\"";
     }
 
     // POST - выполнит обновление
     @RequestMapping("/update")
     public String performUpdate() {
-        return "31.12.2015";
+        return "\"20.10.2015 20:45\"";
     }
 
     //GET - отправит номера в CSV и вернет результат обработки
@@ -26,7 +26,7 @@ public class MainController {
     //GET - проверка одного номера
     @RequestMapping("/number")
     public String getRegionForNumber() {
-        return "31.12.2015";
+        return "31.12.2015 13:08";
     }
 
 
