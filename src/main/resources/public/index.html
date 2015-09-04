@@ -1,4 +1,4 @@
-<html ng-app=""> <!--FIXME: replace with actual name-->
+<html ng-app="phoneRegion">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -9,8 +9,9 @@
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="js/controllers.js"></script>
 </head>
-<body>
+<body ng-controller="MainController">
 
     <div class="container">
         <div class="panel panel-default">
@@ -19,10 +20,20 @@
             </div>
             <div class="panel-body">
                 <p> База данных операторов последний раз обновлялась 31.12.2015 <button type="button" class="btn btn-sm btn-default"> Проверить обновления </button> </p>
-                <p> <label> Введите номер телефона, чтобы проверить его: <input type="text" ng-model="sometext"/> </label> </p>
+                <p> <label> Введите номер телефона, чтобы проверить его: <input type="text" ng-model="phonenumber"/> </label> <span ng-show="region"> - {{region}} </span> </p>
                 <p> или </p>
                 <p> <label> Загрузите список номеров на проверку в формате CSV </label> <button type="button" class="btn btn-sm btn-default"> Выбрать файл... </button> </p>
-                <h1 ng-show="sometext">Hello {{ sometext }}</h1>
+                <table class="table table-bordered" ng-show="phones">
+                    <caption> Данные по списку номеров </caption>
+                    <tr>
+                        <th> Номер </th>
+                        <th> Регион </th>
+                    </tr>
+                    <tr ng-repeat="phone in phones">
+                        <td> {{phone.number}} </td>
+                        <td> {{phone.region}} </td>
+                    </tr>
+                </table>
             </div>
         </div>
     </div>
