@@ -33,4 +33,9 @@ public class DBService implements IDBService {
         String hash = (String)jdbcTemplate.queryForObject(sql, null, String.class);
         return hash;
     }
+
+    @Override
+    public int fillTableFromCSV(String pathToFile) {
+        return 0;
+    }
 }

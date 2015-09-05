@@ -1,7 +1,5 @@
 package prbn;
 
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +11,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +20,7 @@ import java.util.Map;
 public class MainController {
     @Autowired
     IDBService dbService;
+
     private static final String[] urls = {
             "http://rossvyaz.ru/docs/articles/Kody_ABC-3kh.csv",
             "http://rossvyaz.ru/docs/articles/Kody_ABC-4kh.csv",
@@ -43,28 +44,36 @@ public class MainController {
      */
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     public String performUpdate() throws IOException {
+        // for overy of 4 files
         for (int i=0; i<4; i++){
+            // get hash from DB
             String hash = dbService.getHash(columns[i]);
+            // get etag from remote server
             URL url = new URL(urls[i]);
             URLConnection connection = url.openConnection();
             Map<String, List<String>> map = connection.getHeaderFields();
             String newHash = map.get("ETag").get(0);
+            // if old hash not exist or not equal to new
             if (hash == null || !hash.equals(newHash)) {
+                // write CSV to temporary file
+                final Path tempPath = Files.createTempFile("dbupdate", ".csv");
+                Files.delete(tempPath);
                 try (InputStream input = url.openConnection().getInputStream()) {
-
+                    Files.copy(input, tempPath);
                 }
+                // if old hash does not exist
+                if (hash == null) {
+                    // load data from CSV to DB table
+                    dbService.fillTableFromCSV(tempPath.toString());
+                // if hash not equal to new
+                } else if (!hash.equals(newHash)){
+                    // update data in DB using this recipe:
+                    // http://stackoverflow.com/questions/21495600/import-csv-to-update-rows-in-table/21495728#21495728
+                }
+                Files.delete(tempPath);
+                // write new hash and datetime to DB
             }
         }
-        // для каждого из 4-х файлов
-            // считываем из БД хеш
-            // получаем etag
-            // если старый хеш отсутствует или несовпадает с полученным
-                // пишем CSV в файл на диске
-            // если старый хеш отсутсвует
-                // грузим данные в таблицу из CSV
-            // если хеш не совпадает с полученным
-                // пользуемся этим рецептом - http://stackoverflow.com/questions/21495600/import-csv-to-update-rows-in-table/21495728#21495728
-            // обновляем хеш в БД
         // TODO: вычислять обновленные, удаленные, добавленные можно по этому рецепту - http://stackoverflow.com/a/27902396
         return "{\"date\":\"20.10.2015 20:45\", \"inserted\":3, \"updated\": 1, \"deleted\": 2}";
     }

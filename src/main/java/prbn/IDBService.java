@@ -14,4 +14,10 @@ public interface IDBService {
      * @return hash from specified column
      */
     String getHash(String column);
+
+    /**
+     * @param pathToFile where CSV file placed
+     * @return new rows count
+     */
+    int fillTableFromCSV(String pathToFile);
 }
