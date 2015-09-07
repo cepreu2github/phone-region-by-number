@@ -44,7 +44,10 @@ public class MainController {
      */
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     public String performUpdate() throws IOException {
-        // for overy of 4 files
+        int countNew = 0;
+        int countMod = 0;
+        int countDel = 0;
+        // for every of 4 files
         for (int i=0; i<4; i++){
             // get hash from DB
             String hash = dbService.getHash(columns[i]);
@@ -64,7 +67,7 @@ public class MainController {
                 // if old hash does not exist
                 if (hash == null) {
                     // load data from CSV to DB table
-                    dbService.fillTableFromCSV(tempPath.toString());
+                    countNew = dbService.fillTableFromCSV(tempPath.toString());
                 // if hash not equal to new
                 } else if (!hash.equals(newHash)){
                     // update data in DB using this recipe:
@@ -75,7 +78,8 @@ public class MainController {
             }
         }
         // TODO: вычислять обновленные, удаленные, добавленные можно по этому рецепту - http://stackoverflow.com/a/27902396
-        return "{\"date\":\"20.10.2015 20:45\", \"inserted\":3, \"updated\": 1, \"deleted\": 2}";
+        return "{\"date\":\"20.10.2015 20:45\", \"inserted\":" + Integer.toString(countNew) +
+                ", \"updated\": 1, \"deleted\": 2}";
     }
 
     /**

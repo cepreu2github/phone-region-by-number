@@ -36,6 +36,17 @@ public class DBService implements IDBService {
 
     @Override
     public int fillTableFromCSV(String pathToFile) {
-        return 0;
+        jdbcTemplate.execute("SET GLOBAL local_infile = 1;\n");
+        jdbcTemplate.execute("SET character_set_database=cp1251;\n");
+        jdbcTemplate.execute("LOAD DATA LOCAL INFILE '" + pathToFile + "' \n" +
+                "INTO TABLE numbers \n" +
+                "FIELDS TERMINATED BY ';' \n" +
+                "LINES TERMINATED BY '\\n'\n" +
+                "IGNORE 1 ROWS (`prefix`, `start`, `end`, @dummy, @dummy, `region`);");
+        jdbcTemplate.execute("SET character_set_database=default;\n");
+        jdbcTemplate.execute("DELETE FROM numbers WHERE `region`='';");
+        Integer count = (Integer)jdbcTemplate.queryForObject("SELECT COUNT(*) FROM numbers;\n",
+                null, Integer.class);
+        return count;
     }
 }
