@@ -28,13 +28,14 @@ public class MainController {
             "http://rossvyaz.ru/docs/articles/Kody_DEF-9kh.csv"
     };
     private static final String[] columns = {"ABC-3_key", "ABC-4_key", "ABC-8_key", "DEF-9_key"};
+    private static final int[] digits = {3, 4, 8, 9};
 
     /**
      * @return datetime of last database update
      */
     @RequestMapping(value = "/date", method = RequestMethod.GET)
     public String getUpdateDatetime() {
-        return dbService.getUpdateDatetime();
+        return "\"" + dbService.getUpdateDatetime() + "\"";
     }
 
     /**
@@ -71,15 +72,19 @@ public class MainController {
                 // if hash not equal to new
                 } else if (!hash.equals(newHash)){
                     // update data in DB using this recipe:
-                    // http://stackoverflow.com/questions/21495600/import-csv-to-update-rows-in-table/21495728#21495728
+                    int[] result = dbService.updateTableFromCSV(tempPath.toString(), digits[i]);
+                    countNew += result[0];
+                    countMod += result[1];
+                    countDel += result[2];
                 }
                 Files.delete(tempPath);
                 // write new hash and datetime to DB
+                dbService.updateHash(columns[i], newHash);
             }
         }
-        // TODO: вычислять обновленные, удаленные, добавленные можно по этому рецепту - http://stackoverflow.com/a/27902396
-        return "{\"date\":\"20.10.2015 20:45\", \"inserted\":" + Integer.toString(countNew) +
-                ", \"updated\": 1, \"deleted\": 2}";
+        String newDate = dbService.getUpdateDatetime();
+        return "{\"date\":\"" + newDate + "\", \"inserted\":" + Integer.toString(countNew) +
+                ", \"updated\":" + Integer.toString(countMod) + ", \"deleted\": " + Integer.toString(countDel) + "}";
     }
 
     /**
@@ -90,18 +95,37 @@ public class MainController {
      */
     @RequestMapping(value = "/numbers", method = RequestMethod.POST)
     public String getRegionsForNumbers(@RequestParam("file") MultipartFile file) throws IOException, BadPhoneNumberException {
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         if (!file.isEmpty()) {
             BufferedReader in = new BufferedReader(new InputStreamReader(file.getInputStream()));
-            String firstLine = in.readLine();
-            if (firstLine.length() >= 8)
-                return "[{\"number\":\"81234356782\", \"region\":\"Тмутаракань\"}, {\"number\":\"84674356712\", \"region\":\"Залесье\"}]";
+            StringBuilder sb = new StringBuilder();
+            sb.append("[");
+            String line = null;
+            while((line = in.readLine())!= null){
+                sb.append("{\"number\":\"");
+                sb.append(line);
+                sb.append("\", \"region\":\"");
+                sb.append(dbService.checkNumber(validateNumber(line)).trim());
+                sb.append("\"},");
+            }
+            sb.deleteCharAt(sb.length()-1);
+            sb.append("]");
+            return sb.toString();
+            //return "[{\"number\":\"81234356782\", \"region\":\"Тмутаракань\"}, {\"number\":\"84674356712\", \"region\":\"Залесье\"}]";
         }
         throw  new BadPhoneNumberException("\"Нераспознан формат списка номеров. Используйте CSV.\"");
+    }
+
+    private String validateNumber(String number) throws BadPhoneNumberException {
+        if (number == null)
+            throw new BadPhoneNumberException("\"некорректный номер телефона\"");
+        number = number.replaceAll("\\D+","");
+        if (number.length() == 0)
+            throw new BadPhoneNumberException("\"некорректный номер телефона\"");
+        if (number.charAt(0) == '8' || number.charAt(0) == '7')
+            number = number.substring(1);
+        if (number.length() != 10)
+            throw new BadPhoneNumberException("\"некорректный номер телефона\"");
+        return number;
     }
 
     /**
@@ -112,15 +136,7 @@ public class MainController {
      */
     @RequestMapping(value = "/number", method = RequestMethod.GET)
     public String getRegionForNumber(@RequestParam String number) throws BadPhoneNumberException {
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        if (number.length()> 4)
-            return "\"Междуречье\"";
-        else
-            throw new BadPhoneNumberException("\"некорректный номер телефона\"");
+        return "\"" + dbService.checkNumber(validateNumber(number)).trim() + "\"";
     }
 
     @ExceptionHandler(BadPhoneNumberException.class)
