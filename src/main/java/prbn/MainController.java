@@ -20,6 +20,8 @@ import java.util.Map;
 public class MainController {
     @Autowired
     IDBService dbService;
+    @Autowired
+    INetworkService netService;
 
     private static final String[] urls = {
             "http://rossvyaz.ru/docs/articles/Kody_ABC-3kh.csv",
@@ -54,15 +56,13 @@ public class MainController {
             String hash = dbService.getHash(columns[i]);
             // get etag from remote server
             URL url = new URL(urls[i]);
-            URLConnection connection = url.openConnection();
-            Map<String, List<String>> map = connection.getHeaderFields();
-            String newHash = map.get("ETag").get(0);
+            String newHash = netService.getETagFrom(url);
             // if old hash not exist or not equal to new
             if (hash == null || !hash.equals(newHash)) {
                 // write CSV to temporary file
                 final Path tempPath = Files.createTempFile("dbupdate", ".csv");
                 Files.delete(tempPath);
-                try (InputStream input = url.openConnection().getInputStream()) {
+                try (InputStream input = netService.getStreamFrom(url)) {
                     Files.copy(input, tempPath);
                 }
                 // if old hash does not exist
