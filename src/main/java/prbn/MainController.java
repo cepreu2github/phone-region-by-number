@@ -19,18 +19,18 @@ import java.util.Map;
 @RestController
 public class MainController {
     @Autowired
-    IDBService dbService;
+    private IDBService dbService;
     @Autowired
-    INetworkService netService;
+    private INetworkService netService;
 
-    private static final String[] urls = {
+    public static final String[] urls = {
             "http://rossvyaz.ru/docs/articles/Kody_ABC-3kh.csv",
             "http://rossvyaz.ru/docs/articles/Kody_ABC-4kh.csv",
             "http://rossvyaz.ru/docs/articles/Kody_ABC-8kh.csv",
             "http://rossvyaz.ru/docs/articles/Kody_DEF-9kh.csv"
     };
-    private static final String[] columns = {"ABC-3_key", "ABC-4_key", "ABC-8_key", "DEF-9_key"};
-    private static final int[] digits = {3, 4, 8, 9};
+    public static final String[] columns = {"ABC-3_key", "ABC-4_key", "ABC-8_key", "DEF-9_key"};
+    public static final int[] digits = {3, 4, 8, 9};
 
     /**
      * @return datetime of last database update
@@ -99,7 +99,7 @@ public class MainController {
             BufferedReader in = new BufferedReader(new InputStreamReader(file.getInputStream()));
             StringBuilder sb = new StringBuilder();
             sb.append("[");
-            String line = null;
+            String line;
             while((line = in.readLine())!= null){
                 sb.append("{\"number\":\"");
                 sb.append(line);
@@ -145,7 +145,7 @@ public class MainController {
         return e.getMessage();
     }
 
-    private class BadPhoneNumberException extends Exception {
+    public class BadPhoneNumberException extends Exception {
         public BadPhoneNumberException(String s) {
             super(s);
         }
